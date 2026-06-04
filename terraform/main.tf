@@ -58,7 +58,6 @@ resource "aws_iam_policy" "lambda_policy" {
         Effect = "Allow"
         Action = [
           "s3:ListAllMyBuckets",
-          "s3:GetBucketLifecycleConfiguration",
           "s3:GetLifecycleConfiguration",
           "s3:PutLifecycleConfiguration",
           "s3:GetBucketTagging"
