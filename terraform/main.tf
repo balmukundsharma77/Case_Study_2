@@ -59,6 +59,7 @@ resource "aws_iam_policy" "lambda_policy" {
         Action = [
           "s3:ListAllMyBuckets",
           "s3:GetBucketLifecycleConfiguration",
+          "s3:PutLifecycleConfiguration",
           "s3:GetBucketTagging"
         ]
         Resource = "*"
