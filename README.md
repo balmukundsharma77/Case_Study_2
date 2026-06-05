@@ -336,46 +336,25 @@ REMEDIATED
 
 ---
 
-# Scalability Discussion
+### Enterprise-Scale Fan-Out Design
 
-Current implementation:
-
-```text
-EventBridge
-    ↓
-Single Lambda
-    ↓
-Sequential Processing
-```
-
-Suitable for:
-
-```text
-Hundreds of buckets
-```
-
-Potential limitation:
-
-```text
-15-minute Lambda timeout
-```
-
----
-
-# Enterprise Scale Redesign
-
-For thousands of buckets:
+To support large-scale environments, I would redesign the solution using Amazon SQS and parallel worker Lambdas.
 
 ```text
 EventBridge Scheduler
-           ↓
+        ↓
 Orchestrator Lambda
-           ↓
-Amazon SQS
-           ↓
+(List All Buckets)
+        ↓
+Amazon SQS Queue
+(1 Message Per Bucket)
+        ↓
 Worker Lambda Fleet
-           ↓
-Parallel Processing
+(Parallel Processing)
+        ↓
+S3 + CloudWatch APIs
+        ↓
+DLQ + Audit Logs
 ```
 
 If serial iteration approaches Lambda's 15-minute timeout, redesign as a fan-out workflow:
@@ -388,15 +367,45 @@ If serial iteration approaches Lambda's 15-minute timeout, redesign as a fan-out
 6. Failed messages go to a DLQ for replay.
 7. Aggregate results in DynamoDB or CloudWatch Embedded Metric Format.
 
-Benefits:
+### How It Works
 
-* Horizontal scalability
-* Failure isolation
-* DLQ support
-* Retry capability
-* No Lambda timeout risk
+**Step 1 – Orchestrator Lambda**
+
+* Triggered nightly by EventBridge.
+* Discovers all S3 buckets.
+* Creates one SQS message per bucket.
+
+**Step 2 – SQS Queue**
+
+* Acts as a durable buffer.
+* Decouples discovery from processing.
+* Supports retries and failure handling.
+
+**Step 3 – Worker Lambda Fleet**
+
+Each worker processes a single bucket:
+
+1. Check lifecycle policy.
+2. Check exemption tag.
+3. Query BucketSizeBytes metric.
+4. Apply lifecycle policy if eligible.
+
+Since buckets are processed independently, AWS can automatically scale out multiple Lambda workers in parallel.
 
 ---
+
+### Benefits
+
+| Current Design            | Fan-Out Design              |
+| ------------------------- | --------------------------- |
+| Sequential processing     | Parallel processing         |
+| Risk of 15-minute timeout | No timeout bottleneck       |
+| Single point of failure   | Failure isolated per bucket |
+| Limited scalability       | Horizontally scalable       |
+| Manual retry handling     | Native SQS retry + DLQ      |
+
+---
+
 
 # FinOps Benefits
 
