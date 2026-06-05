@@ -45,10 +45,6 @@ Eligible buckets receive:
 | 30+ Days  | Standard-IA                |
 | 180+ Days | Glacier Flexible Retrieval |
 
-Additional optimization:
-
-* Abort incomplete multipart uploads after 7 days
-
 ---
 
 # Solution Components
