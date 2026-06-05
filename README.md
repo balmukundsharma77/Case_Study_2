@@ -405,29 +405,3 @@ Since buckets are processed independently, AWS can automatically scale out multi
 | Manual retry handling     | Native SQS retry + DLQ      |
 
 ---
-
-
-# FinOps Benefits
-
-Storage cost reduction:
-
-```text
-Standard
-      ↓
-Standard-IA
-      ↓
-Glacier Flexible Retrieval
-```
-
-Expected outcomes:
-
-* Reduced storage spend
-* Automated governance
-* Reduced operational overhead
-* Improved compliance
-
----
-
-
-
-This keeps each unit of work small, retryable, and horizontally scalable.
